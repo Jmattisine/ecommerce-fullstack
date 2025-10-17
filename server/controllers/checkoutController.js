@@ -1,0 +1,3 @@
+import Stripe from 'stripe'; import Order from '../models/Order.js';
+const stripe=new Stripe(process.env.STRIPE_SECRET_KEY||'sk_test');
+export async function createPaymentIntent(req,res){try{const {items}=req.body;const total=items.reduce((a,i)=>a+i.price*i.qty,0);const pi=await stripe.paymentIntents.create({amount:Math.max(100,total),currency:'clp',automatic_payment_methods:{enabled:true}});const order=await Order.create({user:req.user.id,items,total,status:'created'});res.json({clientSecret:pi.client_secret,orderId:order._id})}catch(e){res.status(500).json({msg:'Stripe error',error:e.message})}}

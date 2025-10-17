@@ -1,0 +1,1 @@
+import Axios from 'axios'; const api=Axios.create({baseURL: import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://localhost:3005/api'}); api.interceptors.request.use(cfg=>{const t=localStorage.getItem('token'); if(t) cfg.headers['x-auth-token']=t; return cfg}); export default api;

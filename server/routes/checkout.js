@@ -1,0 +1,1 @@
+import {Router} from 'express'; import auth from '../middleware/auth.js'; import {createPaymentIntent} from '../controllers/checkoutController.js'; const r=Router(); r.post('/create-order',auth,createPaymentIntent); export default r;
