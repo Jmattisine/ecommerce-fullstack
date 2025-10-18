@@ -1,42 +1,28 @@
-import React from 'react'
-import axios from '../utils/axios.js'
-import { useCart } from '../state/CartContext.jsx'
+import { useCart } from '../contexts/CartContext.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import api from '../api.js';
 
 export default function Checkout() {
-  const { items, total, clear } = useCart()
+  const { cart, dispatch } = useCart();
+  const { token } = useAuth();
 
-  async function pagar() {
-    try {
-      const { data } = await axios.post('/checkout/create-order', { items })
-      alert('Intento de pago creado. OrderId: ' + data.orderId)
-      clear()
-    } catch (e) {
-      alert('Error: ' + (e?.response?.data?.msg || e.message))
+  const crearOrden = async () => {
+    const items = cart.map(i => ({ product: i._id, quantity: i.qty }));
+    const { data: order } = await api.post('/orders', { items }, { headers: { Authorization:`Bearer ${token}` } });
+    const { data } = await api.post('/checkout/pay', { orderId: order._id }, { headers: { Authorization:`Bearer ${token}` } });
+    if (data.ok || data.clientSecret) {
+      dispatch({ type:'CLEAR' });
+      alert('Pago OK (demo/stripe test).');
     }
-  }
+  };
 
+  const total = cart.reduce((a,i)=>a+i.price*i.qty,0);
   return (
     <div>
-      <h1 className="section-title">Checkout</h1>
-      <div className="card">
-        <div className="card-body">
-          {!items.length ? (
-            <div className="card-desc">Tu carrito está vacío.</div>
-          ) : (
-            <>
-              <ul style={{margin:0, paddingLeft:16}}>
-                {items.map(it => (
-                  <li key={it._id}>{it.name} x {it.qty} – <b>${it.price * it.qty}</b></li>
-                ))}
-              </ul>
-              <div className="card-row" style={{marginTop:12}}>
-                <div className="badge">Total: ${total}</div>
-                <button disabled={!items.length} onClick={pagar} className="btn btn-primary">Pagar ahora</button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+      <h1>Checkout</h1>
+      <ul>{cart.map(i => <li key={i._id}>{i.name} x {i.qty} — ${i.price * i.qty}</li>)}</ul>
+      <p>Total: ${total}</p>
+      <button onClick={crearOrden} disabled={!cart.length}>Pagar</button>
     </div>
-  )
+  );
 }

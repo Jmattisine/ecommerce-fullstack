@@ -1,21 +1,20 @@
 import { useState } from 'react';
 import api from '../api.js';
-import { useAuth } from '../contexts/AuthContext.jsx';
 
-export default function Login() {
-  const [form, setForm] = useState({ email:'', password:'' });
-  const { login } = useAuth();
+export default function Signup() {
+  const [form, setForm] = useState({ name:'', email:'', password:'' });
   const submit = async e => {
     e.preventDefault();
-    const { data } = await api.post('/auth/login', form);
-    login(data.user, data.token);
+    await api.post('/auth/register', form);
+    alert('Registrado. Ahora inicia sesión.');
   };
   return (
     <form onSubmit={submit}>
-      <h1>Log in</h1>
+      <h1>Sign Up</h1>
+      <input placeholder="Nombre" onChange={e=>setForm({...form,name:e.target.value})}/>
       <input placeholder="Email" onChange={e=>setForm({...form,email:e.target.value})}/>
       <input placeholder="Password" type="password" onChange={e=>setForm({...form,password:e.target.value})}/>
-      <button>Entrar</button>
+      <button>Crear cuenta</button>
     </form>
   );
 }

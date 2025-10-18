@@ -1,35 +1,20 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import axios from '../utils/axios.js'
-import { useCart } from '../state/CartContext.jsx'
+import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import api from '../api.js';
+import { useCart } from '../contexts/CartContext.jsx';
 
 export default function Product() {
-  const { id } = useParams()
-  const [p, setP] = useState(null)
-  const { add } = useCart()
-
-  useEffect(() => {
-    axios.get('/products/' + id).then(r => setP(r.data))
-  }, [id])
-
-  if (!p) return <div className="center" style={{minHeight:200}}>Cargando...</div>
-
-  const img = p.image || 'https://images.unsplash.com/photo-1541745537413-b804b1bd47a5?q=80&w=1200&auto=format&fit=crop'
-
+  const { id } = useParams();
+  const [p, setP] = useState(null);
+  const { dispatch } = useCart();
+  useEffect(() => { api.get(`/products/${id}`).then(r => setP(r.data)); }, [id]);
+  if (!p) return 'Cargando...';
   return (
-    <div className="card" style={{overflow:'hidden'}}>
-      <div className="card-media" style={{height:240}}>
-        <img src={img} alt={p.name} />
-      </div>
-      <div className="card-body">
-        <div className="badge">🍕 Favorita</div>
-        <h1 className="section-title" style={{margin:'6px 0 2px'}}>{p.name}</h1>
-        <p className="card-desc">{p.description || 'Salsa de tomate San Marzano, mozzarella fresca y albahaca.'}</p>
-        <div className="card-row" style={{marginTop:8}}>
-          <div className="card-price" style={{fontSize:'1.2rem'}}>${p.price}</div>
-          <button onClick={() => add(p,1)} className="btn btn-primary">Agregar al carrito</button>
-        </div>
-      </div>
+    <div>
+      <h1>{p.name}</h1>
+      <p>{p.description}</p>
+      <p>${p.price}</p>
+      <button onClick={() => dispatch({ type:'ADD', item:p })}>Agregar al carrito</button>
     </div>
-  )
+  );
 }
